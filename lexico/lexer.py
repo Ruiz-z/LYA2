@@ -25,8 +25,27 @@ class ErrorLex:
 #se escriben los operadores aritmeticos primero
 #los que tienen dos simbolos y despues
     OpAritmeticos = ["++","--","+=","-=","/=", "*=","+","-","*","/","%","="]
-    Tok_OpAritmeticos = {lex: -(21+i) for i, lex in enumerate(OpAritmeticos) }
+    Tok_OpAritmeticos = {op: -(21+i) for i, op in enumerate(OpAritmeticos) }
 
     OpRelacionales = ["<","<=","!=",">",">=","=="]
-    OpLogicos = [";","[","]",",",":","(",")","{","}"]
+    Tok_Relacionales = {op: -(33+i) for i, op in enumerate(OpRelacionales) }
 
+    OpLogicos = ["&&","||","!"]
+    Tok_log = {op: -(41+i) for i, op in enumerate(OpLogicos) }
+
+
+    OpEspeciales = [";","[","]",",",":","(",")","{","}"]
+    Tok_Especiales =  {ch: -(61+i) for i, ch in enumerate(OpEspeciales) }
+
+espacios = re.compile(r"[ \t]+")
+comentarios = re.compile(r"//.*$")
+string = re.compile(r"\"(?:[^\"\n]|\\\")*\"")
+
+real = re.compile(r"-?(\d+\.\d+|\.\d+)")
+entero = re.compile(r"-?\d+")
+
+#identificadores
+idClaMet = re.compile(r"@[A-Za-z]{1,7}")
+idstring = re.compile(r"\$([A-Za-z]{1,7})")
+identero = re.compile(r"&[A-Za-z]{1,7}")
+idreal = re.compile(r"%[A-Za-z]{1,7}")
