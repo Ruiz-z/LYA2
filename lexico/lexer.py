@@ -65,7 +65,7 @@ def clasificacion_numero(lex: str) -> int:
         else:
             return -53
     except ValueError:
-        return -53   # <- antes tenías -54 (string), esto era un bug
+        return -53
 
 
 def emparejar_ops(text: str, i: int) -> Optional[Tuple[str, int, int]]:
@@ -108,4 +108,94 @@ def emparejar_ops(text: str, i: int) -> Optional[Tuple[str, int, int]]:
 
     return None
 
+def token_linea(line: str, num_linea: int) -> Tuple[List[Token], List[ErrorLex]]:
+    tokens: List[Token] = []
+    errores: List[ErrorLex] = []
+    i = 0
+    N = len(line)
 
+    mcom = comentarios.search(line)
+    corte = mcom.start() if mcom else N
+
+    while i < corte:
+        msp = espacios.search(line,i)
+        if msp:
+            i = msp.end()
+            continue
+
+        pts = i + 1
+#String
+        if line[i] == '"':
+            mstr = string.match(line, i)
+            if not mstr:
+                errores.append(ErrorLex('"', "String sin cerrar", pts, num_linea))
+                break
+            lex = mstr.group(0)
+            tokens.append(Token(lex, -54, pts, num_linea))
+            i = mstr.end()
+            continue
+        #Operadores y caracteres especiales
+        op = emparejar_ops(line, i)
+        if op:
+            lex,tok,adv = op
+            tokens.append(Token(lex, tok , pts , num_linea))
+            i += adv
+            continue
+
+        mreal = real.match(line, i)
+        if mreal:
+            lex = mreal.group(0)
+            tokens.append(Token(lex, -53, pts, num_linea))
+            i = mreal.end()
+            continue
+
+        mint = entero.match(line, i)
+        if mint:
+            lex = mstr.group(0)
+            tok = clasificacion_numero(lex)
+            tokens.append(Token(tok, -54, pts, num_linea))
+            i = mstr.end()
+            continue
+
+        for rg in (idClaMet.findall(line), idstring.findall(line)):
+            mid = rg.match(line, i)
+            if mid:
+                lex = line[i:mid.end()]
+                tokens.append(Token(lex, -54, pts, num_linea))
+                i = mid.end()
+                break
+
+        else:
+            mword = re.match(r"[A-za-z]+",line[i:])
+            if mword:
+                lex = mword.group(0)
+                if lex in Tok_Preservadas:
+                    tokens.append(Token(lex, -54, pts, num_linea))
+                else:
+                    errores.append(
+                        ErrorLex(
+                            lex,"Identificador invalido debe iniciar con almenos un @,$,&,% y solo letras",
+                            pts,
+                            num_linea,
+                        )
+                    )
+                i += len(lex)
+                continue
+
+        ch = line[i]
+        if ch == '.':
+            i += 1
+            continue
+
+        errores.append(ErrorLex(ch, "Simbolo no reconocido", pts, num_linea))
+        i += 1
+    return tokens, errores
+
+def scan(source: str) -> Tuple[List[Token], List[ErrorLex]]:
+    all_tokens: List[Token] = []
+    all_errores: List[ErrorLex] = []
+    for nlinea, raw in enumerate(source.splitlines(), start=1):
+        toks, errs = token_lineai(raw, nlinea)
+        all_tokens.extend(toks)
+        all_errores.extend(errs)
+    return all_tokens, all_errores
