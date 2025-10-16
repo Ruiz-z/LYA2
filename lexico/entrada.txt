@@ -1,0 +1,4 @@
+var @Clase ++ 5;
+si ( &x > 0 ) && ( %y <= .5 )
+// comentario
+"ok" entero = 40000
