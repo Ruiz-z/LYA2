@@ -2,7 +2,6 @@ import re
 from dataclasses import dataclass
 from typing import List, Tuple, Optional
 
-#clase para los tokens
 @dataclass
 class Token:
     lexema: str
@@ -10,7 +9,6 @@ class Token:
     pts: int
     linea: int
 
-#clase que nos ayuda a la deteccion de errores
 @dataclass
 class ErrorLex:
     lexema: str
@@ -40,25 +38,23 @@ Tok_Logicos = {op: -(41+i) for i, op in enumerate(OpLogicos)}
 OpEspeciales = [";","[","]",",",":","(",")","{","}"]
 Tok_Especiales = {ch: -(61+i) for i, ch in enumerate(OpEspeciales)}
 
-# Token
-ID_TOK_BY_PREFIX = {'@': 70, '$': 71, '&': 72, '%': 73}
-ID_VALID_REGEX = re.compile(r"[@$%&][A-Za-z]{1,7}")
-
+# Identificadores por tipo
+ID_TOK_BY_PREFIX = {'@': -70, '$': -71, '&': -72, '%': -73}
+ID_VALID_REGEX = re.compile(r"[@$%&][A-Za-z]{1,7}")  # total 2..8 con prefijo
 
 # Regex léxicas
 espacios = re.compile(r"[ \t]+")
 comentarios = re.compile(r"//.*$")
 string = re.compile(r"\"(?:[^\"\n]|\\\")*\"")
 
-# Números enteros y reales
+# Números
 real = re.compile(r"-?(?:\d+\.\d+|\.\d+)")
 entero = re.compile(r"-?\d+")
-invalid_real_final = re.compile(r"-?\d+\.(?!\d)")   #valida que no termine con .
+invalid_real_final = re.compile(r"-?\d+\.(?!\d)")  # 5. o -5. => error
 
 # Rango enteros
 entero_min, entero_max = -32768, 32767
 
-#verifica que los enteros no se excedan del rango permitido
 def clasificacion_numero(lex: str) -> int:
     try:
         val = int(lex)
@@ -66,9 +62,10 @@ def clasificacion_numero(lex: str) -> int:
     except ValueError:
         return -53
 
+# PTS: -2 para identificadores (70–73), -1 para lo demás
 def _pts_token(token_code: int) -> int:
-    return -2 if token_code in ID_TOK_BY_PREFIX.values() else -1
-#Da los PTS si es identificador
+    return -2 if token_code in (-70, -71, -72, -73) else -1
+
 def _pts_error_lexeme(lex: str) -> int:
     return -2 if ID_VALID_REGEX.fullmatch(lex or "") else -1
 
@@ -118,7 +115,7 @@ def token_linea(line: str, num_linea: int) -> Tuple[List[Token], List[ErrorLex]]
             i = msp.end()
             continue
 
-        # STRING: si no cierra, reporta solo la comilla y continúa
+        # STRING
         if i < corte and line[i] == '"':
             mstr = string.match(line, i)
             if not mstr:
@@ -131,22 +128,20 @@ def token_linea(line: str, num_linea: int) -> Tuple[List[Token], List[ErrorLex]]
             i = mstr.end()
             continue
 
-        # IDENTIFICADORES con prefijo o '&&' como operador lógico
+        # IDENTIFICADORES por tipo, y '&&' como operador
         if line[i] in "@$%&":
-            # '&&' es operador lógico válido (no identificador)
             if line[i] == '&' and i + 1 < corte and line[i + 1] == '&':
                 tok = Tok_Logicos["&&"]
                 tokens.append(Token("&&", tok, _pts_token(tok), num_linea))
                 i += 2
                 continue
 
-            # Captura lo que sigue al prefijo para validar el lexema
             mfull = re.match(r"[@$%&][A-Za-z0-9_]*", line[i:corte])
             lex_full = mfull.group(0) if mfull else line[i]
             i_next = i + len(lex_full) if mfull else i + 1
 
             if ID_VALID_REGEX.fullmatch(lex_full):
-                tok = -ID_TOK_BY_PREFIX[lex_full[0]]  # 70/71/72/73 según prefijo
+                tok = ID_TOK_BY_PREFIX[lex_full[0]]  # 70/71/72/73
                 tokens.append(Token(lex_full, tok, _pts_token(tok), num_linea))
                 i = i_next
                 continue
