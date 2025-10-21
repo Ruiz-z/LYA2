@@ -1,4 +1,3 @@
-# main.py
 from lexico.lexer import scan
 
 def escribir_tokens(ruta: str, tokens):
@@ -9,15 +8,12 @@ def escribir_tokens(ruta: str, tokens):
 
 def escribir_errores(ruta: str, errores):
     with open(ruta, "w", encoding="utf-8") as f:
-        f.write("Lexema\tDescripcion\tPTS\t#Linea\n")
         for e in errores:
-            f.write(f"{e.lexema}\t{e.descripcion}\t{e.pts}\t{e.linea}\n")
+            f.write(f"Error en la palabra:\t{e.lexema}\t{e.descripcion}\tEn la línea: {e.linea}\n")
 
 def main():
-
     with open("lexico/entrada.txt", "r", encoding="utf-8") as f:
         fuente = f.read()
-
     tokens, errores = scan(fuente)
     escribir_tokens("lexico/tokens.txt", tokens)
     escribir_errores("lexico/errores.txt", errores)
