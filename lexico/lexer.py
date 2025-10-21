@@ -40,10 +40,10 @@ Tok_Logicos = {op: -(41+i) for i, op in enumerate(OpLogicos)}
 OpEspeciales = [";","[","]",",",":","(",")","{","}"]
 Tok_Especiales = {ch: -(61+i) for i, ch in enumerate(OpEspeciales)}
 
-# ---------- Tokens por tipo de identificador ----------
+# Token
 ID_TOK_BY_PREFIX = {'@': 70, '$': 71, '&': 72, '%': 73}
 ID_VALID_REGEX = re.compile(r"[@$%&][A-Za-z]{1,7}")
-# ------------------------------------------------------
+
 
 # Regex léxicas
 espacios = re.compile(r"[ \t]+")
