@@ -1,4 +1,23 @@
-var @Clase ++ 5;
-si ( &x > 0 ) && ( %y <= .5 )
-// comentario
-"ok" entero = 40000
+clase @Main {
+    var $mensaje, &edad, %altura;
+    +++ --- += *=
+    && & || !
+    100000 12.34.56 "hola
+    <<<===>>> ;
+    metodo @Inicio() {
+        leer;
+        si ( &edad >= 18 && %altura > .5 ) {
+            escribir("Acceso permitido");
+        } sino {
+            escribir("Acceso denegado");
+        }
+        // Identificadores inválidos
+        @x1; $cadena_ ; &9; %a1b;
+        // Números válidos e inválidos
+        25; -32768; 32768; -5.; 10.5;
+        // String sin cerrar
+        "Hola
+        // Operadores varios
+        a += b; b--; c==d; e!=f; g<=h; i>=j; k+l-m/n%o;
+    }
+}
