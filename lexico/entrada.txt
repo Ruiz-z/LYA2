@@ -1,30 +1,31 @@
-clase @Principal {
+clase @ClaseP {
 
-var &x, &y, $nombre, %promedio;
-var &vector[10], &matriz[3];
+var &x, &y, &idx, $nom, %prom;
+var &vec[10], &mat[3];
 
 metodo vacio @main() {
 
     // Lecturas iniciales
-    leer(&x, &y, $nombre);
+    leer(&x, &y, $nom);
 
     // Asignaciones simples
     &x = 10;
     &y = &x + 5 * (3 - 1);
-    %promedio = 15.5;
+    %prom = 15.5;
 
     // Arreglos
-    &vector[5] = &x + 3;
-    &matriz[2] = 100;
+    &idx = 5;
+    &vec[&idx] = &x + 3;
+    &mat[3] = 100;
 
     // Escribir salida inicial
-    escribir(&x, &y, %promedio, $nombre);
+    escribir(&x, &y, %prom, $nom);
 
     // Estructura SI
     si(&x > &y) {
-        escribir(&x, $nombre);
+        escribir(&x, $nom);
     } sino {
-        escribir(&y, %promedio);
+        escribir(&y, %prom);
     }
 
     // MIENTRAS
@@ -43,11 +44,11 @@ metodo vacio @main() {
         encaso 10:
             escribir(&x);
         encaso 20:
-            escribir($nombre);
+            escribir($nom);
     }
 
     // Llamada a método
-    ejecutar @procesar;
+    ejecutar @proc;
 
     // Regresar sin expresión
     regresar;
@@ -56,12 +57,12 @@ metodo vacio @main() {
     salir;
 }
 
-metodo vacio @procesar(&valor, $etiqueta) {
+metodo vacio @proc(&val, $eti) {
 
-    escribir(&valor, $etiqueta);
+    escribir(&val, $eti);
 
-    si(&valor == 0) {
-        escribir($etiqueta);
+    si(&val == 0) {
+        escribir($eti);
     }
 
     regresar;
