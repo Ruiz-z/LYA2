@@ -1,23 +1,70 @@
-clase @Main {
-    var $mensaje, &edad, %altura;
-    +++ --- += *=
-    && & || !
-    100000 12.34.56 "hola
-    <<<===>>> ;
-    metodo @Inicio() {
-        leer;
-        si ( &edad >= 18 && %altura > .5 ) {
-            escribir("Acceso permitido");
-        } sino {
-            escribir("Acceso denegado");
-        }
-        // Identificadores inválidos
-        @x1; $cadena_ ; &9; %a1b;
-        // Números válidos e inválidos
-        25; -32768; 32768; -5.; 10.5;
-        // String sin cerrar
-        "Hola
-        // Operadores varios
-        a += b; b--; c==d; e!=f; g<=h; i>=j; k+l-m/n%o;
+clase @Principal {
+
+var &x, &y, $nombre, %promedio;
+var &vector[10], &matriz[3];
+
+metodo vacio @main() {
+
+    // Lecturas iniciales
+    leer(&x, &y, $nombre);
+
+    // Asignaciones simples
+    &x = 10;
+    &y = &x + 5 * (3 - 1);
+    %promedio = 15.5;
+
+    // Arreglos
+    &vector[5] = &x + 3;
+    &matriz[2] = 100;
+
+    // Escribir salida inicial
+    escribir(&x, &y, %promedio, $nombre);
+
+    // Estructura SI
+    si(&x > &y) {
+        escribir(&x, $nombre);
+    } sino {
+        escribir(&y, %promedio);
     }
+
+    // MIENTRAS
+    mientras(&x < 20) {
+        &x = &x + 1;
+        escribir(&x);
+    }
+
+    // REPITE
+    repite {
+        &y = &y - 1;
+    } &y > 5;
+
+    // SWITCH
+    switch(&x) {
+        encaso 10:
+            escribir(&x);
+        encaso 20:
+            escribir($nombre);
+    }
+
+    // Llamada a método
+    ejecutar @procesar;
+
+    // Regresar sin expresión
+    regresar;
+
+    // Salida del método
+    salir;
+}
+
+metodo vacio @procesar(&valor, $etiqueta) {
+
+    escribir(&valor, $etiqueta);
+
+    si(&valor == 0) {
+        escribir($etiqueta);
+    }
+
+    regresar;
+}
+
 }
