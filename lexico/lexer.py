@@ -40,7 +40,8 @@ Tok_Especiales = {ch: -(61+i) for i, ch in enumerate(OpEspeciales)}
 
 # Identificadores por tipo
 ID_TOK_BY_PREFIX = {'@': -70, '$': -71, '&': -72, '%': -73}
-ID_VALID_REGEX = re.compile(r"[@$%&][A-Za-z]{1,7}")  # total 2..8 con prefijo
+# total 2..8 con prefijo (1..7 letras)
+ID_VALID_REGEX = re.compile(r"[@$%&][A-Za-z]{1,7}")
 
 # Regex léxicas
 espacios = re.compile(r"[ \t]+")
@@ -74,6 +75,7 @@ def emparejar_ops(text: str, i: int) -> Optional[Tuple[str, int, int]]:
     if i >= n:
         return None
     ch = text[i]
+
     # si parece inicio de identificador (prefijo + letra), no tratar como operador
     if ch in '@$&%' and (i + 1 < n and text[i + 1].isalpha()):
         return None
@@ -128,23 +130,39 @@ def token_linea(line: str, num_linea: int) -> Tuple[List[Token], List[ErrorLex]]
             i = mstr.end()
             continue
 
-        # IDENTIFICADORES por tipo, y '&&' como operador
-        if line[i] in "@$%&":
-            if line[i] == '&' and i + 1 < corte and line[i + 1] == '&':
-                tok = Tok_Logicos["&&"]
-                tokens.append(Token("&&", tok, _pts_token(tok), num_linea))
-                i += 2
+        # IDENTIFICADORES por tipo y '&&' como operador lógico
+        if i < corte and line[i] == '&' and i + 1 < corte and line[i + 1] == '&':
+            tok = Tok_Logicos["&&"]
+            tokens.append(Token("&&", tok, _pts_token(tok), num_linea))
+            i += 2
+            continue
+
+        # Prefijos de identificador:
+        # - '@', '$' y '&' siempre son prefijos de ID
+        # - '%' solo es prefijo de ID si va seguido de una letra
+        if line[i] in "@$&" or (line[i] == '%' and i + 1 < corte and line[i + 1].isalpha()):
+            # debe haber letra después del prefijo
+            if not (i + 1 < corte and line[i + 1].isalpha()):
+                # caso: '@', '$' o '&' solos → error de identificador
+                errores.append(
+                    ErrorLex(
+                        line[i],
+                        "Identificador inválido (solo letras tras el prefijo y longitud 2–8)",
+                        _pts_error_lexeme(line[i]),
+                        num_linea,
+                    )
+                )
+                i += 1
                 continue
 
-            mfull = re.match(r"[@$%&][A-Za-z0-9_]*", line[i:corte])
+            # formar identificador: prefijo + letras
+            mfull = re.match(r"[@$%&][A-Za-z]*", line[i:corte])
             lex_full = mfull.group(0) if mfull else line[i]
             i_next = i + len(lex_full) if mfull else i + 1
 
             if ID_VALID_REGEX.fullmatch(lex_full):
-                tok = ID_TOK_BY_PREFIX[lex_full[0]]  # 70/71/72/73
+                tok = ID_TOK_BY_PREFIX[lex_full[0]]  # -70..-73
                 tokens.append(Token(lex_full, tok, _pts_token(tok), num_linea))
-                i = i_next
-                continue
             else:
                 errores.append(
                     ErrorLex(
@@ -154,8 +172,8 @@ def token_linea(line: str, num_linea: int) -> Tuple[List[Token], List[ErrorLex]]
                         num_linea,
                     )
                 )
-                i = i_next
-                continue
+            i = i_next
+            continue
 
         # NÚMEROS
         mbad = invalid_real_final.match(line, i)
@@ -166,6 +184,7 @@ def token_linea(line: str, num_linea: int) -> Tuple[List[Token], List[ErrorLex]]
             continue
 
         if line[i] == '-' and i + 1 < corte and line[i + 1] in {'-', '='}:
+            # se manejará como operador en emparejar_ops
             pass
         else:
             mreal = real.match(line, i)
@@ -230,3 +249,4 @@ def scan(source: str) -> Tuple[List[Token], List[ErrorLex]]:
         all_tokens.extend(toks)
         all_errores.extend(errs)
     return all_tokens, all_errores
+
